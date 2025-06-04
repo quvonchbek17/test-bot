@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Zap, Coins, TrendingUp, Gift, Star } from "lucide-react"
-
+import Image from 'next/image';
+import { FaMedal, FaTrophy, FaCrown, FaStar } from 'react-icons/fa';
+import { GiTrophyCup, GiDiamondTrophy } from 'react-icons/gi';
+import { ImCoinDollar, ImCoinPound, ImCoinYen, ImCoinEuro } from "react-icons/im";
+import { BiBitcoin } from "react-icons/bi";
 interface MainDashboardProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
   user: any
@@ -51,12 +55,12 @@ export function MainDashboard({ showToast, user }: MainDashboardProps) {
 
   // Get coin image based on level
   const getCoinImage = (level: number) => {
-    if (level >= 50) return "💎" // Diamond coin for high levels
-    if (level >= 25) return "🏆" // Trophy coin for advanced levels
-    if (level >= 15) return "⭐" // Star coin for intermediate levels
-    if (level >= 10) return "🥇" // Gold coin for experienced players
-    if (level >= 5) return "🥈" // Silver coin for beginners
-    return "🥉" // Bronze coin for new players
+    if (level >= 50) return <ImCoinPound className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Diamond coin for high levels
+    if (level >= 25) return <BiBitcoin className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Trophy coin for advanced levels
+    if (level >= 15) return <ImCoinEuro className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Star coin for intermediate levels
+    if (level >= 10) return <ImCoinDollar className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Gold coin for experienced players
+    if (level >= 5) return <ImCoinYen className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Silver coin for beginners
+    return <ImCoinPound className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Bronze coin for new players
   }
 
   // Energy regeneration
@@ -194,7 +198,13 @@ export function MainDashboard({ showToast, user }: MainDashboardProps) {
           onClick={handleTap}
         >
           <div className="w-[300px] h-[300px] bg-gradient-to-br from-blue-600 to-navy-800 rounded-full flex items-center justify-center shadow-2xl border-8 border-blue-400/30 relative">
-            <div className="text-[90px]">🐹</div>
+            <Image
+            src="/hmstr.png" // Path to your PNG image in the public folder
+            alt="Mouse Icon"
+            width={600} // Adjust width to match the original text-[90px]
+            height={600} // Adjust height to match the original text-[90px]
+            className="object-contain bg-transparent"
+          />
             <div className="absolute -top-4 -right-4 text-5xl animate-pulse">{getCoinImage(level)}</div>
             {energy <= 0 && (
               <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
