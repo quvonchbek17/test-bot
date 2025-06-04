@@ -9,10 +9,11 @@ import { Badge } from "@/components/ui/badge"
 import { Zap, Coins, TrendingUp, Gift, Star } from "lucide-react"
 
 interface MainDashboardProps {
-  showToast: (message: string, type?: "success" | "error" | "info") => void
+  showToast: (message: string, type?: "success" | "error" | "info") => void,
+  user: any
 }
 
-export function MainDashboard({ showToast }: MainDashboardProps) {
+export function MainDashboard({ showToast, user }: MainDashboardProps) {
   const [coins, setCoins] = useState(0)
   // const [profitPerHour] = useState(125000)
   const [tappingAnimation, setTappingAnimation] = useState(false)
@@ -102,13 +103,14 @@ export function MainDashboard({ showToast }: MainDashboardProps) {
 
     setTimeout(() => {
       setFloatingCoins((prev) => prev.filter((coin) => coin.id !== newCoin.id))
-    }, 1000)
+    }, 5000)
 
     setTimeout(() => setTappingAnimation(false), 150)
   }
 
   return (
     <div className="p-4 space-y-4">
+      <h1 className="text-white">{user ? JSON.stringify(user): "Helloooooo"}</h1>
       {/* Compact Stats Header */}
       <div className="grid grid-cols-3 gap-2">
         <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
@@ -229,8 +231,11 @@ export function MainDashboard({ showToast }: MainDashboardProps) {
           }
           100% {
             opacity: 0;
-            transform: translateY(-50px);
+            transform: translateY(-150px);
           }
+        }
+        .animate-float-up {
+          animation: float-up 1.5s ease-out forwards; /* Longer duration */
         }
       `}</style>
     </div>

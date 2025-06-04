@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Copy, Users, Gift, Crown, User } from "lucide-react"
 
 interface FriendsPageProps {
-  showToast: (message: string, type?: "success" | "error" | "info") => void
+  showToast: (message: string, type?: "success" | "error" | "info") => void,
+  user: any
 }
 
 const friendsList = [
@@ -55,10 +56,10 @@ const friendsList = [
 ]
 
 export function FriendsPage({ showToast }: FriendsPageProps) {
-  const [referralLink] = useState("https://t.me/hamster_kombat_bot?start=kentik_12345")
+  const [referralLink] = useState("https://t.me/coinmainertestbot?start=ibc88273b8ybc2")
 
-  const totalFriends = friendsList.length
-  const premiumFriends = friendsList.filter((friend) => friend.isPremium).length
+  const totalFriends = friendsList?.length
+  const premiumFriends = friendsList.filter((friend) => friend.isPremium)?.length
   const totalDiamonds = friendsList.reduce((sum, friend) => sum + friend.diamonds, 0)
 
   const copyReferralLink = async () => {
@@ -180,7 +181,7 @@ export function FriendsPage({ showToast }: FriendsPageProps) {
             </div>
           ))}
 
-          {friendsList.length === 0 && (
+          {friendsList?.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p>No friends invited yet</p>

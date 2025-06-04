@@ -11,7 +11,8 @@ import { Separator } from "@/components/ui/separator"
 import { Settings, Volume2, Wifi, Download, RotateCcw } from "lucide-react"
 
 interface SettingsPageProps {
-  showToast: (message: string, type?: "success" | "error" | "info") => void
+  showToast: (message: string, type?: "success" | "error" | "info") => void,
+  user: any
 }
 
 export function SettingsPage({ showToast }: SettingsPageProps) {

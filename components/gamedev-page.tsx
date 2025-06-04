@@ -8,7 +8,8 @@ import { Progress } from "@/components/ui/progress"
 import { Trophy, Users, Gamepad2, TrendingUp, Clock, Star } from "lucide-react"
 
 interface GameDevPageProps {
-  showToast: (message: string, type?: "success" | "error" | "info") => void
+  showToast: (message: string, type?: "success" | "error" | "info") => void,
+  user: any
 }
 
 const gameGenres = [
@@ -164,7 +165,7 @@ export function GameDevPage({ showToast }: GameDevPageProps) {
       </div>
 
       {/* Active Projects */}
-      {activeProjects.length > 0 && (
+      {activeProjects?.length > 0 && (
         <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center space-x-2 text-white">

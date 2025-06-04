@@ -32,14 +32,10 @@ export function BottomNavigation({ currentPage, onPageChange }: BottomNavigation
               variant="ghost"
               size="sm"
               onClick={() => onPageChange(item.id)}
-              className={`flex flex-col items-center space-y-1 h-16 ${
-                isActive
-                  ? "bg-blue-600/20 text-blue-400 hover:bg-blue-600/30"
-                  : "text-gray-400 hover:text-gray-200 hover:bg-gray-800/50"
-              }`}
+              className={`flex flex-col items-center space-y-1 h-16 no-hover bg-blue-600/20 text-blue-400`}
             >
-              <Icon className="w-5 h-5" />
-              <span className="text-xs font-medium">{item.label}</span>
+              <Icon className="w-6 h-6" />
+              <span className="text-xs font-semibold">{item.label}</span>
             </Button>
           )
         })}

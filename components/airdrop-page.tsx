@@ -8,7 +8,8 @@ import { Progress } from "@/components/ui/progress"
 import { Wallet, CheckCircle, Gift, Twitter, Youtube, MessageCircle } from "lucide-react"
 
 interface AirdropPageProps {
-  showToast: (message: string, type?: "success" | "error" | "info") => void
+  showToast: (message: string, type?: "success" | "error" | "info") => void,
+  user: any
 }
 
 const airdropTasks = [
@@ -91,7 +92,7 @@ export function AirdropPage({ showToast }: AirdropPageProps) {
   }
 
   const completedCount = completedTasks.size
-  const totalTasks = airdropTasks.length
+  const totalTasks = airdropTasks?.length
   const progressPercentage = (completedCount / totalTasks) * 100
   const bonusPercentage = (completedCount - 1) * 5 // Excluding wallet connection
 

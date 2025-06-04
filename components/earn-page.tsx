@@ -9,7 +9,8 @@ import { Progress } from "@/components/ui/progress"
 import { CheckCircle, Gift, Key, Youtube, Twitter, MessageCircle } from "lucide-react"
 
 interface EarnPageProps {
-  showToast: (message: string, type?: "success" | "error" | "info") => void
+  showToast: (message: string, type?: "success" | "error" | "info") => void,
+  user: any
 }
 
 const dailyTasks = [
@@ -69,7 +70,7 @@ export function EarnPage({ showToast }: EarnPageProps) {
   const [cipherSolved, setCipherSolved] = useState(false)
 
   const completedCount = completedTasks.size
-  const totalTasks = dailyTasks.length
+  const totalTasks = dailyTasks?.length
   const progressPercentage = (completedCount / totalTasks) * 100
 
   const handleTaskComplete = (taskId: number) => {
