@@ -31,24 +31,6 @@ export default function HamsterKombatApp() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const app = window.Telegram.WebApp;
-      app.ready();
-      const telegramUser = app.initDataUnsafe?.user;
-      if (telegramUser) {
-        setUser(telegramUser);
-        showToast(`Xush kelibsiz, ${telegramUser.username || telegramUser.first_name}!`, 'success');
-      } else {
-        setError('Foydalanuvchi ma\'lumotlari mavjud emas.');
-        showToast('Foydalanuvchi ma\'lumotlari mavjud emas.', 'error');
-      }
-    } else {
-      setError('Ilova Telegram mijozidan ochilmagan.');
-      showToast('Ilova Telegram mijozidan ochilmagan.', 'error');
-    }
-  }, []);
-
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
@@ -73,9 +55,28 @@ export default function HamsterKombatApp() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black max-w-md mx-auto relative overflow-hidden">
       <Script
-        src="https://telegram.org/js/telegram-web-app.js?57"
-        strategy="lazyOnload" // O'zgartirildi
+        src="https://telegram.org/js/telegram-web-app.js"
+        strategy="lazyOnload"
+        onLoad={() => {
+          const app = (window as any).Telegram?.WebApp;
+          showToast(JSON.stringify(app), "info")
+          if (app) {
+            app.ready();
+            const telegramUser = app.initDataUnsafe?.user;
+            if (telegramUser) {
+              setUser(telegramUser);
+              showToast(`Xush kelibsiz, ${telegramUser.username || telegramUser.first_name}!`, 'success');
+            } else {
+              setError('Foydalanuvchi ma\'lumotlari mavjud emas.');
+              showToast('Foydalanuvchi ma\'lumotlari mavjud emas.', 'error');
+            }
+          } else {
+            setError('Ilova Telegram mijozidan ochilmagan.');
+            showToast('Ilova Telegram mijozidan ochilmagan.', 'error');
+          }
+        }}
       />
+
       <div className="pb-20">{renderPage()}</div>
       <BottomNavigation currentPage={currentPage} onPageChange={setCurrentPage} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
