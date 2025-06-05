@@ -9,7 +9,7 @@ import { Trophy, Users, Gamepad2, TrendingUp, Clock, Star } from "lucide-react"
 
 interface GameDevPageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
-  user: any
+  tgUser: any
 }
 
 const gameGenres = [

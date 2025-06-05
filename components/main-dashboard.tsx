@@ -12,12 +12,16 @@ import { FaMedal, FaTrophy, FaCrown, FaStar } from 'react-icons/fa';
 import { GiTrophyCup, GiDiamondTrophy } from 'react-icons/gi';
 import { ImCoinDollar, ImCoinPound, ImCoinYen, ImCoinEuro } from "react-icons/im";
 import { BiBitcoin } from "react-icons/bi";
+import { useSelector } from "react-redux"
+import { RootState } from "@/redux/store"
+import { useDispatch } from "react-redux"
+import { setUser } from "@/redux/slices/userSlice"
 interface MainDashboardProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
-  user: any
+  tgUser: any
 }
 
-export function MainDashboard({ showToast, user }: MainDashboardProps) {
+export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
   const [coins, setCoins] = useState(0)
   // const [profitPerHour] = useState(125000)
   const [tappingAnimation, setTappingAnimation] = useState(false)
@@ -112,9 +116,23 @@ export function MainDashboard({ showToast, user }: MainDashboardProps) {
     setTimeout(() => setTappingAnimation(false), 150)
   }
 
+  const handleMultiTouch = (event: React.TouchEvent) => {
+    event.preventDefault(); // scroll oldini olish
+
+    // Har bir touch uchun handleTap ishga tushadi
+    Array.from(event.changedTouches).forEach((touch) => {
+      if (energy < clickQuality) return; // energiya yetmasa o'tkazib yubor
+      handleTap({
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        currentTarget: event.currentTarget,
+        preventDefault: () => { },
+      } as unknown as React.MouseEvent);
+    });
+  };
+
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-white">{user ? JSON.stringify(user): "Helloooooo"}</h1>
+    <div className="p-4 space-y-4 flex flex-col">
       {/* Compact Stats Header */}
       <div className="grid grid-cols-3 gap-2">
         <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
@@ -190,22 +208,22 @@ export function MainDashboard({ showToast, user }: MainDashboardProps) {
       </div>
 
       {/* Large Hamster Tapping Area */}
-      <div className="relative flex justify-center items-center pt-[100px]">
+      <div className="relative flex flex-1 justify-center items-center">
         <div
-          className={`relative cursor-pointer transition-transform duration-150 ${
-            tappingAnimation ? "scale-95" : "scale-100"
-          } hover:scale-105 ${energy <= clickQuality ? "opacity-50 cursor-not-allowed" : ""}`}
+          className={`relative cursor-pointer transition-transform duration-150 ${tappingAnimation ? "animate-tap-scale" : ""
+            } hover:scale-105 ${energy <= clickQuality ? "opacity-50 cursor-not-allowed" : ""}`}
           onClick={handleTap}
+          onTouchStart={handleMultiTouch}
         >
-          <div className="w-[300px] h-[300px] bg-gradient-to-br from-blue-600 to-navy-800 rounded-full flex items-center justify-center shadow-2xl border-8 border-blue-400/30 relative">
+          <div className="w-[400px] h-[300px] relative">
             <Image
-            src="/hmstr.png" // Path to your PNG image in the public folder
-            alt="Mouse Icon"
-            width={600} // Adjust width to match the original text-[90px]
-            height={600} // Adjust height to match the original text-[90px]
-            className="object-contain bg-transparent"
-          />
-            <div className="absolute -top-4 -right-4 text-5xl animate-pulse">{getCoinImage(level)}</div>
+              src="/coin-icon.png" // Path to your PNG image in the public folder
+              alt="Mouse Icon"
+              width={600} // Adjust width to match the original text-[90px]
+              height={600} // Adjust height to match the original text-[90px]
+              className="object-contain bg-transparent"
+            />
+            {/* <div className="absolute -top-4 -right-4 text-5xl animate-pulse">{getCoinImage(level)}</div> */}
             {energy <= 0 && (
               <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
                 <div className="text-white text-lg font-bold">No Energy</div>
@@ -217,14 +235,14 @@ export function MainDashboard({ showToast, user }: MainDashboardProps) {
           {floatingCoins.map((coin) => (
             <div
               key={coin.id}
-              className="absolute text-4xl animate-bounce pointer-events-none"
+              className="absolute text-5xl animate-bounce pointer-events-none text-yellow-300 font-semibold"
               style={{
                 left: coin.x,
                 top: coin.y,
                 animation: "float-up 1s ease-out forwards",
               }}
             >
-              {getCoinImage(level)}
+              {`+${clickQuality}`}
             </div>
           ))}
         </div>
@@ -247,7 +265,20 @@ export function MainDashboard({ showToast, user }: MainDashboardProps) {
         .animate-float-up {
           animation: float-up 1.5s ease-out forwards; /* Longer duration */
         }
+
+       @keyframes tap-scale {
+       0% { transform: scale(1); }
+       50% { transform: scale(0.95); }
+       100% { transform: scale(1); }
+      }
+
+    .animate-tap-scale {
+      animation: tap-scale 0.2s ease-in-out;
+    }
       `}</style>
     </div>
   )
 }
+
+
+// bg-gradient-to-br from-blue-600 to-navy-800 rounded-full flex items-center justify-center shadow-2xl border-8 border-blue-400/30

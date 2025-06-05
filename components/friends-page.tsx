@@ -9,7 +9,7 @@ import { Copy, Users, Gift, Crown, User } from "lucide-react"
 
 interface FriendsPageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
-  user: any
+  tgUser: any
 }
 
 const friendsList = [

@@ -9,7 +9,7 @@ import { Wallet, CheckCircle, Gift, Twitter, Youtube, MessageCircle } from "luci
 
 interface AirdropPageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
-  user: any
+  tgUser: any
 }
 
 const airdropTasks = [

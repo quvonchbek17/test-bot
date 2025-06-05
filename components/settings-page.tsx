@@ -12,7 +12,7 @@ import { Settings, Volume2, Wifi, Download, RotateCcw } from "lucide-react"
 
 interface SettingsPageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
-  user: any
+  tgUser: any
 }
 
 export function SettingsPage({ showToast }: SettingsPageProps) {

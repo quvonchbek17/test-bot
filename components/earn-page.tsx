@@ -10,7 +10,7 @@ import { CheckCircle, Gift, Key, Youtube, Twitter, MessageCircle } from "lucide-
 
 interface EarnPageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
-  user: any
+  tgUser: any
 }
 
 const dailyTasks = [

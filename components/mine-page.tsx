@@ -9,7 +9,7 @@ import { Search, TrendingUp, Coins, Clock, Zap, Battery } from "lucide-react"
 
 interface MinePageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
-  user: any
+  tgUser: any
 }
 
 const upgradeCategories = ["All", "PR & Team", "Markets", "Legal", "Web3", "Energy"]
