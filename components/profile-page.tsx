@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
-import { User, Edit3, Trophy, Calendar, Coins, Zap, Star, TrendingUp, Crown, Target, Clock, Gift } from "lucide-react"
+import { User, Edit3, X, Trophy, Calendar, Coins, Zap, Star, TrendingUp, Crown, Target, Clock, Gift } from "lucide-react"
 import { TfiApple, TfiCrown, TfiCup, TfiFaceSmile, TfiInfoAlt, TfiPowerOff, TfiStatsUp, TfiUser, TfiWallet, TfiWand } from "react-icons/tfi";
+import { MdOutlineEdit } from "react-icons/md";
 
 interface ProfilePageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
@@ -143,7 +144,7 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
               onClick={() => setIsEditing(!isEditing)}
               className="bg-white/20 border-white/30 text-white hover:bg-white/30"
             >
-              <Edit3 className="w-4 h-4 mr-1" />
+              {isEditing ? <X className="w-4 h-4 mr-1" /> :<Edit3 className="w-4 h-4 mr-1" /> }
             </Button>
           </CardTitle>
         </CardHeader>
