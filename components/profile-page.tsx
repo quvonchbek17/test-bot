@@ -87,8 +87,6 @@ const dailyStats = [
 ]
 
 export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
-
-  console.log(tgUser)
   const [isEditing, setIsEditing] = useState(false)
   const [profileData, setProfileData] = useState({
     username: "HamsterMaster",
@@ -121,7 +119,6 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
 
   return (
     <div className="p-4 space-y-6">
-      <h1>{tgUser ? JSON.stringify(tgUser): "Hellooooooo"}</h1>
       {/* Profile Header */}
       <Card className="bg-black/20 text-white border border-blue-500/30 border-[2px] shadow-lg">
         <CardHeader className="pb-3">
@@ -175,7 +172,7 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
                 </div>
               ) : (
                 <div>
-                  <h2 className="text-2xl font-bold">{"Eshmat"}</h2>
+                  <h2 className="text-2xl font-bold">{`${tgUser?.first_name} ${tgUser.last_name}`}</h2>
                   <div className="flex items-center space-x-4 text-sm opacity-90">
                     <div className="flex items-center space-x-1">
                       <Calendar className="w-4 h-4" />

@@ -133,7 +133,6 @@ export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
 
   return (
     <div className="p-4 space-y-4 flex flex-col">
-      <h1>{tgUser ? JSON.stringify(tgUser): "Hellooooooo"}</h1>
       {/* Compact Stats Header */}
       <div className="grid grid-cols-3 gap-2">
         <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">

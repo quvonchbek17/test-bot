@@ -67,6 +67,7 @@ export default function HamsterKombatApp() {
             app.ready();
             const telegramUser = app.initDataUnsafe?.user;
             if (telegramUser) {
+              setUser(telegramUser)
               showToast(`Xush kelibsiz, ${telegramUser.username || telegramUser.first_name}!`, 'success');
             } else {
               setError('Foydalanuvchi ma\'lumotlari mavjud emas.');
