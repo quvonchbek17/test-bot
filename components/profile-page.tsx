@@ -121,6 +121,7 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
 
   return (
     <div className="p-4 space-y-6">
+      <h1>{tgUser ? JSON.stringify(tgUser): "Hellooooooo"}</h1>
       {/* Profile Header */}
       <Card className="bg-black/20 text-white border border-blue-500/30 border-[2px] shadow-lg">
         <CardHeader className="pb-3">
