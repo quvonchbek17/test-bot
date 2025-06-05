@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -87,6 +87,9 @@ const dailyStats = [
 ]
 
 export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
+  const textRef = useRef<HTMLHeadingElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [shouldScroll, setShouldScroll] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [profileData, setProfileData] = useState({
     username: "HamsterMaster",
@@ -99,6 +102,13 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
     friendsInvited: 3,
     gamesCompleted: 12,
   })
+
+  useEffect(() => {
+
+    const textWidth = textRef.current?.scrollWidth || 0
+    const containerWidth = containerRef.current?.offsetWidth || 0
+    setShouldScroll(textWidth > containerWidth)
+  }, [])
 
   const handleSaveProfile = () => {
     setIsEditing(false)
@@ -125,7 +135,7 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <User className="w-6 h-6" />
-              <span>Profile</span>
+              <span className="text-[20px]">ID: {tgUser?.id || "Use in Telegram"}</span>
             </div>
             <Button
               size="sm"
@@ -146,9 +156,8 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
                     <button
                       key={i}
                       onClick={() => setProfileData((prev) => ({ ...prev, avatar }))}
-                      className={`text-3xl p-2 rounded-lg transition-all text-blue-400 ${
-                        profileData.avatar === avatar ? "bg-white/30 scale-110" : "bg-white/10 hover:bg-white/20"
-                      }`}
+                      className={`text-3xl p-2 rounded-lg transition-all text-blue-400 ${profileData.avatar === avatar ? "bg-white/30 scale-110" : "bg-white/10 hover:bg-white/20"
+                        }`}
                     >
                       {avatar}
                     </button>
@@ -172,7 +181,15 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
                 </div>
               ) : (
                 <div>
-                  <h2 className="text-2xl font-bold">{`${tgUser?.first_name} ${tgUser.last_name}`}</h2>
+                  <div ref={containerRef} className="w-[220px] overflow-hidden whitespace-nowrap relative">
+                    <h2
+                      ref={textRef}
+                      className={`inline-block text-2xl font-bold ${shouldScroll ? "animate-scroll" : ""
+                        }`}
+                    >
+                      {`${tgUser?.first_name || "Use"} ${tgUser?.last_name || "in Telegram"}`}
+                    </h2>
+                  </div>
                   <div className="flex items-center space-x-4 text-sm opacity-90">
                     <div className="flex items-center space-x-1">
                       <Calendar className="w-4 h-4" />
@@ -290,6 +307,20 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
           </div>
         </CardContent>
       </Card>
+
+      <style jsx>{`
+    @keyframes scroll {
+      0% {
+        transform: translateX(100%);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+    .animate-scroll {
+      animation: scroll 15s linear infinite;
+    }
+  `}</style>
     </div>
   )
 }
