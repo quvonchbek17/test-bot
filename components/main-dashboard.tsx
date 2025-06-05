@@ -213,7 +213,7 @@ export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
           className={`relative cursor-pointer transition-transform duration-150 ${tappingAnimation ? "animate-tap-scale" : ""
             } hover:scale-105 ${energy <= clickQuality ? "opacity-50 cursor-not-allowed" : ""}`}
           onClick={handleTap}
-          // onTouchStart={handleMultiTouch}
+          onTouchStart={handleMultiTouch}
         >
           <div className="w-[400px] h-[300px] relative">
             <Image
