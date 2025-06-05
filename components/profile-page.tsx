@@ -188,7 +188,7 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
                       className={`inline-block text-2xl font-bold ${shouldScroll ? "animate-scroll" : ""
                         }`}
                     >
-                      {`${tgUser?.first_name || "Use"} ${tgUser?.last_name || "in Telegram"}`}
+                      {tgUser?.first_name || tgUser?.last_name ? `${tgUser?.first_name } ${tgUser?.last_name}`: "Use in Telegram"}
                     </h2>
                   </div>
                   <div className="flex items-center space-x-4 text-sm opacity-90">
