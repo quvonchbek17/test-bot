@@ -12,10 +12,16 @@ import { SettingsPage } from '@/components/settings-page';
 import { BottomNavigation } from '@/components/bottom-navigation';
 import { Toast } from '@/components/toast';
 import { ProfilePage } from '@/components/profile-page';
+import io from 'socket.io-client';
+import LoadingPage from '@/components/ui/loading';
+
+const socket = io(`http://localhost:5000/users`);
+
 
 export type Page = 'home' | 'mine' | 'earn' | 'friends' | 'airdrop' | 'gamedev' | 'settings' | 'profile';
 
 export default function HamsterKombatApp() {
+
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [user, setUser] = useState<{
@@ -31,6 +37,13 @@ export default function HamsterKombatApp() {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
+
+  useEffect(() => {
+    socket.on('userUpdate', (data) => {
+      console.log(data)
+      setUser(data)
+    })
+  }, [])
 
   const renderPage = () => {
     switch (currentPage) {
@@ -61,6 +74,9 @@ export default function HamsterKombatApp() {
         src="https://telegram.org/js/telegram-web-app.js"
         strategy="lazyOnload"
         onLoad={() => {
+          let a = { id: String(Math.floor(Math.random() * 100000)), first_name: "Eshmat", coins: 0 }
+          socket.emit('createOrGetUser', a)
+          setUser(a as any)
           const app = (window as any).Telegram?.WebApp;
           showToast(JSON.stringify(app), "info");
           if (app) {
@@ -80,7 +96,7 @@ export default function HamsterKombatApp() {
         }}
       />
 
-      <div className="flex-1 pb-20">{renderPage()}</div>
+      <div className="flex-1 pb-20">{user ? renderPage(): <LoadingPage/>}</div>
       <BottomNavigation currentPage={currentPage} onPageChange={setCurrentPage} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>

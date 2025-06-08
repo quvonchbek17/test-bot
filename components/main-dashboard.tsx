@@ -16,6 +16,10 @@ import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
 import { useDispatch } from "react-redux"
 import { setUser } from "@/redux/slices/userSlice"
+import io from 'socket.io-client';
+
+const socket = io(`http://localhost:5000/coins`);
+
 interface MainDashboardProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
   tgUser: any
@@ -23,6 +27,7 @@ interface MainDashboardProps {
 
 export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
   const [coins, setCoins] = useState(0)
+  const [user, setUser] = useState(tgUser)
   // const [profitPerHour] = useState(125000)
   const [tappingAnimation, setTappingAnimation] = useState(false)
   const [floatingCoins, setFloatingCoins] = useState<Array<{ id: number; x: number; y: number }>>([])
@@ -57,15 +62,19 @@ export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
     }
   }
 
-  // Get coin image based on level
-  const getCoinImage = (level: number) => {
-    if (level >= 50) return <ImCoinPound className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Diamond coin for high levels
-    if (level >= 25) return <BiBitcoin className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Trophy coin for advanced levels
-    if (level >= 15) return <ImCoinEuro className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Star coin for intermediate levels
-    if (level >= 10) return <ImCoinDollar className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Gold coin for experienced players
-    if (level >= 5) return <ImCoinYen className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Silver coin for beginners
-    return <ImCoinPound className="text-yellow-400 w-[40px] h-[40px] text-semibold" /> // Bronze coin for new players
-  }
+
+  useEffect(() => {
+    if (!socket.connected) {
+      socket.connect();
+      console.log('Socket join');
+    }
+
+    return () => {
+      console.log('Socket disconnected');
+      socket.disconnect();
+    };
+  }, []);
+
 
   // Energy regeneration
   useEffect(() => {
@@ -75,61 +84,61 @@ export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
     return () => clearInterval(interval)
   }, [maxEnergy, energyRefillRate])
 
-  const handleTap = (event: React.MouseEvent) => {
-    if (energy <= clickQuality) {
-      showToast("Not enough energy!", "error")
-      return
+  const handleTap = (
+    event: React.TouchEvent<HTMLElement> | React.MouseEvent<HTMLElement>
+  ) => {
+    event.preventDefault();
+
+    // faqat bitta nuqtani olaylik: touch bo'lsa birinchi touch, yo'q bo'lsa sichqoncha
+    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+
+    if (energy < clickQuality) {
+      showToast("Not enough energy!", "error");
+      return;
     }
-    const newTotalCoins = totalCoinsCollected + clickQuality
-    const levelData = calculateLevel(newTotalCoins)
 
-    setCoins((prev) => prev + clickQuality)
-    setTotalCoinsCollected(newTotalCoins)
-    setEnergy((prev) => Math.max(0, prev - clickQuality))
+    socket.emit('addCoin', { userId: user?.id, coinCount: clickQuality });
 
-    // Check for level up
+    const newTotalCoins = totalCoinsCollected + clickQuality;
+    const levelData = calculateLevel(newTotalCoins);
+
+    setUser((prevUser: any) => ({
+      ...prevUser,
+      coins: prevUser.coins + clickQuality,
+    }));
+    setTotalCoinsCollected(newTotalCoins);
+    setEnergy((prev) => Math.max(0, prev - clickQuality));
+
     if (levelData.level > level) {
-      setLevel(levelData.level)
-      showToast(`Level Up! You are now level ${levelData.level}!`, "success")
+      setLevel(levelData.level);
+      showToast(`Level Up! You are now level ${levelData.level}!`, "success");
     }
 
-    setCoinsToNextLevel(levelData.coinsToNext)
-    setTappingAnimation(true)
+    setCoinsToNextLevel(levelData.coinsToNext);
+    setTappingAnimation(true);
 
-    // Create floating coin animation
-    const rect = event.currentTarget.getBoundingClientRect()
-    const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
 
     const newCoin = {
-      id: Date.now(),
+      id: Date.now() + Math.random(),
       x: x - 10,
       y: y - 10,
-    }
+    };
 
-    setFloatingCoins((prev) => [...prev, newCoin])
+    setFloatingCoins((prev) => [...prev, newCoin]);
 
     setTimeout(() => {
-      setFloatingCoins((prev) => prev.filter((coin) => coin.id !== newCoin.id))
-    }, 5000)
+      setFloatingCoins((prev) => prev.filter((coin) => coin.id !== newCoin.id));
+    }, 5000);
 
-    setTimeout(() => setTappingAnimation(false), 150)
-  }
-
-  const handleMultiTouch = (event: React.TouchEvent) => {
-    event.preventDefault(); // scroll oldini olish
-
-    // Har bir touch uchun handleTap ishga tushadi
-    Array.from(event.changedTouches).forEach((touch) => {
-      if (energy < clickQuality) return; // energiya yetmasa o'tkazib yubor
-      handleTap({
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        currentTarget: event.currentTarget,
-        preventDefault: () => { },
-      } as unknown as React.MouseEvent);
-    });
+    setTimeout(() => setTappingAnimation(false), 150);
   };
+
+
+
 
   return (
     <div className="p-4 space-y-4 flex flex-col">
@@ -141,7 +150,7 @@ export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
               <Coins className="w-4 h-4" />
               <span className="text-xs font-medium">Coins</span>
             </div>
-            <div className="text-sm font-bold text-white">{coins.toLocaleString()}</div>
+            <div className="text-sm font-bold text-white">{user?.coins || 0}</div>
           </CardContent>
         </Card>
 
@@ -212,8 +221,8 @@ export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
         <div
           className={`relative cursor-pointer transition-transform duration-150 ${tappingAnimation ? "animate-tap-scale" : ""
             } hover:scale-105 ${energy <= clickQuality ? "opacity-50 cursor-not-allowed" : ""}`}
-          onClick={handleTap}
-          onTouchStart={handleMultiTouch}
+          // onClick={handleTap}
+          onTouchStart={handleTap}
         >
           <div className="w-[400px] h-[300px] relative">
             <Image
