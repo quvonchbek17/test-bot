@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { ReduxProvider } from '@/components/providers/provider'
+import { SocketProvider } from '@/lib/SocketContext'
 
 export const metadata: Metadata = {
   title: 'v0 App',
@@ -15,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ReduxProvider><body>{children}</body></ReduxProvider>
+      <SocketProvider><body>{children}</body></SocketProvider>
     </html>
   )
 }

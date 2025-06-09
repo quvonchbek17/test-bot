@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { User, Edit3, X, Trophy, Calendar, Coins, Zap, Star, TrendingUp, Crown, Target, Clock, Gift } from "lucide-react"
 import { TfiApple, TfiCrown, TfiCup, TfiFaceSmile, TfiInfoAlt, TfiPowerOff, TfiStatsUp, TfiUser, TfiWallet, TfiWand } from "react-icons/tfi";
 import { MdOutlineEdit } from "react-icons/md";
+import { useSocket } from "@/lib/SocketContext"
 
 interface ProfilePageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
@@ -88,8 +89,10 @@ const dailyStats = [
 ]
 
 export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
+  const { coinSocket } = useSocket();
   const textRef = useRef<HTMLHeadingElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [user, setUser] = useState(tgUser)
   const [shouldScroll, setShouldScroll] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [profileData, setProfileData] = useState({
@@ -103,6 +106,23 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
     friendsInvited: 3,
     gamesCompleted: 12,
   })
+
+  // Socket.IO ulanishini boshqarish
+  useEffect(() => {
+    if (coinSocket) {
+      coinSocket.emit('getUserDatas', { id: tgUser.id });
+      coinSocket.on('getUserDatasResponse', (data) => {
+        setUser(data)
+      });
+
+      // Tozalash
+      return () => {
+        coinSocket.off('getUserDatasResponse');
+      };
+    } else {
+      showToast("Socket not connected!", "error");
+    }
+  }, [coinSocket, tgUser.id]);
 
   useEffect(() => {
 
@@ -128,6 +148,15 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
 
   const getAvatarOptions = () => [<TfiFaceSmile />, <TfiApple />, <TfiCrown />, <TfiCup />, <TfiInfoAlt />, <TfiPowerOff />, <TfiStatsUp />, <TfiUser />, <TfiWand />, <TfiWallet />]
 
+const calculateTimeSinceJoined = (joinDate: string | Date): string => {
+  const now = new Date();
+  const joined = new Date(joinDate);
+  const diffMs = now.getTime() - joined.getTime(); // Millisekundlarda farq
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24)); // Kunlar
+  const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); // Soatlar
+  return `${days} days ${hours} hours`;
+};
+
   return (
     <div className="p-4 space-y-6">
       {/* Profile Header */}
@@ -144,7 +173,7 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
               onClick={() => setIsEditing(!isEditing)}
               className="bg-white/20 border-white/30 text-white hover:bg-white/30"
             >
-              {isEditing ? <X className="w-4 h-4 mr-1" /> :<Edit3 className="w-4 h-4 mr-1" /> }
+              {isEditing ? <X className="w-4 h-4 mr-1" /> : <Edit3 className="w-4 h-4 mr-1" />}
             </Button>
           </CardTitle>
         </CardHeader>
@@ -188,17 +217,13 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
                       className={`inline-block text-2xl font-bold ${shouldScroll ? "animate-scroll" : ""
                         }`}
                     >
-                      {tgUser?.first_name || tgUser?.last_name ? `${tgUser?.first_name } ${tgUser?.last_name}`: "Use in Telegram"}
+                      {tgUser?.first_name || tgUser?.last_name ? `${tgUser?.first_name || ""} ${tgUser?.last_name || ""}` : "Use in Telegram"}
                     </h2>
                   </div>
                   <div className="flex items-center space-x-4 text-sm opacity-90">
                     <div className="flex items-center space-x-1">
                       <Calendar className="w-4 h-4" />
-                      <span>Joined {new Date(new Date()).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4" />
-                      <span>Level {profileData.level}</span>
+                      <span>Joined {new Date(user.createdAt).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\./g, '-')}</span>
                     </div>
                   </div>
                 </div>
@@ -219,7 +244,7 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
         <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
           <CardContent className="p-4 text-center">
             <Coins className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-white">{profileData.totalCoins.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-white">{user?.coins?.toLocaleString()}</div>
             <div className="text-sm text-gray-400">Total Coins</div>
           </CardContent>
         </Card>
@@ -227,7 +252,7 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
         <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
           <CardContent className="p-4 text-center">
             <Target className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-white">{profileData.totalTaps.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-white">{user?.totalTaps?.toLocaleString()}</div>
             <div className="text-sm text-gray-400">Total Taps</div>
           </CardContent>
         </Card>
@@ -236,31 +261,57 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
       {/* Daily Stats */}
       <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-white">Today's Activity</CardTitle>
+          {/* <CardTitle className="text-lg text-white">Infos</CardTitle> */}
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            {dailyStats.map((stat) => {
-              const Icon = stat.icon
-              return (
-                <div key={stat.label} className="flex items-center space-x-3">
-                  <Icon className={`w-5 h-5 ${stat.color}`} />
-                  <div>
-                    <div className="font-bold text-white">
-                      {typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value}
-                    </div>
-                    <div className="text-xs text-gray-400">{stat.label}</div>
-                  </div>
+            <div className="flex items-center space-x-3">
+              <Star className={`w-5 h-5 text-blue-400`} />
+              <div>
+                <div className="font-bold text-white">
+                  Level
                 </div>
-              )
-            })}
+                <div className="text-[15px] text-gray-400">{user.level}</div>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <Star className={`w-5 h-5 text-blue-400`} />
+              <div>
+                <div className="font-bold text-white">
+                  Since Join
+                </div>
+                <div className="text-[15px] text-gray-400">{calculateTimeSinceJoined(user.createdAt)}</div>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <Target className={`w-5 h-5 text-blue-400`} />
+              <div>
+                <div className="font-bold text-white">
+                  Tap Power
+                </div>
+                <div className="text-[15px] text-gray-400">{user.clickQuality} / Tap</div>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <Zap className={`w-5 h-5 text-yellow-400`} />
+              <div>
+                <div className="font-bold text-white">
+                  Recharge Rate
+                </div>
+                <div className="text-[15px] text-gray-400">{user.energyQuality} / Sec</div>
+              </div>
+            </div>
+
           </div>
         </CardContent>
       </Card>
 
 
       {/* Game Statistics */}
-      <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
+      {/* <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center space-x-2 text-white">
             <TrendingUp className="w-5 h-5" />
@@ -307,7 +358,7 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <style jsx>{`
     @keyframes scroll {

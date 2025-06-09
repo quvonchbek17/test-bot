@@ -1,122 +1,131 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Zap, Coins, TrendingUp, Gift, Star } from "lucide-react"
+import { Zap, Coins, TrendingUp, Gift, Star, Flame } from "lucide-react"
 import Image from 'next/image';
-import { FaMedal, FaTrophy, FaCrown, FaStar } from 'react-icons/fa';
-import { GiTrophyCup, GiDiamondTrophy } from 'react-icons/gi';
-import { ImCoinDollar, ImCoinPound, ImCoinYen, ImCoinEuro } from "react-icons/im";
-import { BiBitcoin } from "react-icons/bi";
-import { useSelector } from "react-redux"
-import { RootState } from "@/redux/store"
-import { useDispatch } from "react-redux"
-import { setUser } from "@/redux/slices/userSlice"
-import io from 'socket.io-client';
-
-const socket = io(`http://localhost:5000/coins`);
+import { useSocket } from "@/lib/SocketContext"
+import { Page } from "@/app/page"
 
 interface MainDashboardProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
-  tgUser: any
+  tgUser: any,
+  setCurrentPage: (page: Page) => void;
 }
 
-export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
-  const [coins, setCoins] = useState(0)
-  const [user, setUser] = useState(tgUser)
-  // const [profitPerHour] = useState(125000)
-  const [tappingAnimation, setTappingAnimation] = useState(false)
-  const [floatingCoins, setFloatingCoins] = useState<Array<{ id: number; x: number; y: number }>>([])
-
-  // Level system
-  const [level, setLevel] = useState(1)
-  const [coinsToNextLevel, setCoinsToNextLevel] = useState(1000)
-  const [totalCoinsCollected, setTotalCoinsCollected] = useState(0)
-
-  // Energy system
-  const [energy, setEnergy] = useState(1000)
-  const [maxEnergy, setMaxEnergy] = useState(1000)
-  const [energyLevel, setEnergyLevel] = useState(1)
-  const [energyRefillRate, setEnergyRefillRate] = useState(1) // Energy per second
-  const [clickQuality, setClickQuality] = useState(level) // Energy per second
+export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboardProps) {
+  const { coinSocket } = useSocket();
+  const [user, setUser] = useState(tgUser);
+  const [tappingAnimation, setTappingAnimation] = useState(false);
+  const [floatingCoins, setFloatingCoins] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [level, setLevel] = useState(tgUser.level);
+  const [coinsToNextLevel, setCoinsToNextLevel] = useState(0);
+  const [energy, setEnergy] = useState(tgUser.energy);
+  const [maxEnergy, setMaxEnergy] = useState(tgUser.energyCapacity);
+  const [energyQuality, setenergyQuality] = useState(tgUser.energyQuality);
+  const [clickQuality, setClickQuality] = useState(tgUser.clickQuality);
 
   // Calculate level based on total coins collected
   const calculateLevel = (totalCoins: number) => {
-    let currentLevel = 1
-    let coinsNeeded = 0
+    let currentLevel = 1;
+    let coinsNeeded = 0;
 
     while (coinsNeeded <= totalCoins) {
-      coinsNeeded += 1000 * currentLevel
+      coinsNeeded += 1000 * currentLevel;
       if (coinsNeeded <= totalCoins) {
-        currentLevel++
+        currentLevel++;
       }
     }
 
     return {
       level: currentLevel,
       coinsToNext: coinsNeeded - totalCoins,
-    }
-  }
-
-
-  useEffect(() => {
-    if (!socket.connected) {
-      socket.connect();
-      console.log('Socket join');
-    }
-
-    return () => {
-      console.log('Socket disconnected');
-      socket.disconnect();
     };
-  }, []);
+  };
 
+  // Socket.IO ulanishini boshqarish
+  useEffect(() => {
+    if (coinSocket) {
+      coinSocket.emit('getUserDatas', { id: user.id });
+      coinSocket.on('getUserDatasResponse', (data) => {
+        setUser(data);
+        setEnergy(data.energy)
+        setLevel(data.level)
+        setClickQuality(data.clickQuality)
+
+
+      const levelData = calculateLevel(data.coins);
+      if (levelData.level > level) {
+        setLevel(levelData.level);
+      }
+
+      setCoinsToNextLevel(levelData.coinsToNext);
+      });
+
+
+      // Tozalash
+      return () => {
+        coinSocket.off('getUserDatasResponse');
+      };
+    } else {
+      showToast("Socket not connected!", "error");
+    }
+  }, [coinSocket, user.id, showToast]);
 
   // Energy regeneration
   useEffect(() => {
     const interval = setInterval(() => {
-      setEnergy((prev) => Math.min(maxEnergy, prev + energyRefillRate))
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [maxEnergy, energyRefillRate])
+      setEnergy((prev: any) => Math.min(maxEnergy, prev + energyQuality));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [maxEnergy, energyQuality]);
 
   const handleTap = (
     event: React.TouchEvent<HTMLElement> | React.MouseEvent<HTMLElement>
   ) => {
     event.preventDefault();
 
-    // faqat bitta nuqtani olaylik: touch bo'lsa birinchi touch, yo'q bo'lsa sichqoncha
     const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
     const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
 
     if (energy < clickQuality) {
-      showToast("Not enough energy!", "error");
       return;
     }
 
-    socket.emit('addCoin', { userId: user?.id, coinCount: clickQuality });
-
-    const newTotalCoins = totalCoinsCollected + clickQuality;
-    const levelData = calculateLevel(newTotalCoins);
-
     setUser((prevUser: any) => ({
       ...prevUser,
-      coins: prevUser.coins + clickQuality,
+      coins: (prevUser.coins) + clickQuality,
+      energy: (prevUser.energy) - clickQuality,
+      totalTaps: (prevUser.totalTaps) + 1,
     }));
-    setTotalCoinsCollected(newTotalCoins);
-    setEnergy((prev) => Math.max(0, prev - clickQuality));
+    setEnergy((prev: any) => Math.max(0, prev - clickQuality));
+
+    const levelData = calculateLevel(user.coins);
 
     if (levelData.level > level) {
       setLevel(levelData.level);
-      showToast(`Level Up! You are now level ${levelData.level}!`, "success");
     }
 
     setCoinsToNextLevel(levelData.coinsToNext);
     setTappingAnimation(true);
+
+    if (coinSocket) {
+      coinSocket.emit('addCoin', {
+        userId: user?.id,
+        coinCount: clickQuality,
+        level,
+        energy,
+        energyCapacity: maxEnergy,
+        totalTaps: user.totalTaps,
+        clickQuality: user.clickQuality,
+        energyQuality: user.energyQuality
+      });
+    } else {
+      return;
+    }
 
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
     const x = clientX - rect.left;
@@ -137,67 +146,31 @@ export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
     setTimeout(() => setTappingAnimation(false), 150);
   };
 
-
-
+  // Agar coinSocket mavjud bo'lmasa, loading yoki xato sahifasini ko'rsatish
+  if (!coinSocket) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white text-lg font-bold">Socket ulanmadi...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 space-y-4 flex flex-col">
+    <div className="h-[90vh] flex flex-col p-4 space-y-2 flex flex-col">
       {/* Compact Stats Header */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
           <CardContent className="p-2 text-center">
             <div className="flex items-center justify-center space-x-1 text-blue-400">
               <Coins className="w-4 h-4" />
               <span className="text-xs font-medium">Coins</span>
             </div>
-            <div className="text-sm font-bold text-white">{user?.coins || 0}</div>
+            <div className="text-sm font-bold text-white">{user?.coins?.toLocaleString('en-US')}</div>
           </CardContent>
         </Card>
-
-        <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
-          <CardContent className="p-2 text-center">
-            <div className="flex items-center justify-center space-x-1 text-yellow-400">
-              <Zap className="w-4 h-4" />
-              <span className="text-xs font-medium">Energy</span>
-            </div>
-            <div className="text-sm font-bold text-white">
-              {energy}/{maxEnergy}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
-          <CardContent className="p-2 text-center">
-            <div className="flex items-center justify-center space-x-1 text-green-400">
-              <Star className="w-4 h-4" />
-              <span className="text-xs font-medium">Level</span>
-            </div>
-            <div className="text-sm font-bold text-white">{level}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Compact Progress Bars */}
-      <div className="grid grid-cols-2 gap-2">
-        {/* Energy Bar */}
-        <div className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg rounded-lg p-2">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center space-x-1 text-yellow-400">
-              <Zap className="w-3 h-3" />
-              <span className="text-xs font-medium">Energy Lvl {energyLevel}</span>
-            </div>
-            <span className="text-xs text-gray-400">{energyRefillRate}/sec</span>
-          </div>
-          <div className="w-full bg-gray-700 rounded-full h-2">
-            <div
-              className="bg-gradient-to-r from-yellow-500 to-orange-400 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(energy / maxEnergy) * 100}%` }}
-            />
-          </div>
-        </div>
 
         {/* Level Bar */}
-        <div className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg rounded-lg p-2">
+        <div className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg rounded-lg p-2 pb-3">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center space-x-1 text-green-400">
               <Star className="w-3 h-3" />
@@ -214,33 +187,27 @@ export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
             />
           </div>
         </div>
+
       </div>
 
       {/* Large Hamster Tapping Area */}
-      <div className="relative flex flex-1 justify-center items-center">
+
+      <div className="flex-1 flex justify-center items-center">
         <div
-          className={`relative cursor-pointer transition-transform duration-150 ${tappingAnimation ? "animate-tap-scale" : ""
-            } hover:scale-105 ${energy <= clickQuality ? "opacity-50 cursor-not-allowed" : ""}`}
-          // onClick={handleTap}
+          className={`relative cursor-pointer transition-transform duration-150 ${tappingAnimation ? "animate-tap-scale" : ""} hover:scale-105 ${energy <= clickQuality ? "opacity-50 cursor-not-allowed" : ""}`}
+          onClick={handleTap}
           onTouchStart={handleTap}
         >
-          <div className="w-[400px] h-[300px] relative">
+          <div className="w-[400px] h-[400px] relative">
             <Image
-              src="/coin-icon.png" // Path to your PNG image in the public folder
+              src="/coin-icon.png"
               alt="Mouse Icon"
-              width={600} // Adjust width to match the original text-[90px]
-              height={600} // Adjust height to match the original text-[90px]
+              width={400}
+              height={400}
               className="object-contain bg-transparent"
             />
-            {/* <div className="absolute -top-4 -right-4 text-5xl animate-pulse">{getCoinImage(level)}</div> */}
-            {energy <= 0 && (
-              <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                <div className="text-white text-lg font-bold">No Energy</div>
-              </div>
-            )}
           </div>
 
-          {/* Floating Coins */}
           {floatingCoins.map((coin) => (
             <div
               key={coin.id}
@@ -257,8 +224,21 @@ export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
         </div>
       </div>
 
-      {/* Coin Stats */}
+      {/* Bottom Area */}
+      <div className="mt-auto grid grid-cols-2 gap-2">
+        <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg py-2 flex justify-center items-center gap-1">
+          <Zap className="text-yellow-400" />
+          <p className="text-sm font-bold text-white p-0 m-0">
+            {energy}/{maxEnergy}
+          </p>
 
+        </Card>
+
+        <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg py-2 flex justify-center items-center">
+          <Flame className="text-yellow-400" /> <button onClick={() => setCurrentPage('mine')} className="text-white font-bold pt-1 m-0">Boost</button>
+        </Card>
+
+      </div>
 
       <style jsx>{`
         @keyframes float-up {
@@ -272,22 +252,19 @@ export function MainDashboard({ showToast, tgUser }: MainDashboardProps) {
           }
         }
         .animate-float-up {
-          animation: float-up 1.5s ease-out forwards; /* Longer duration */
+          animation: float-up 1.5s ease-out forwards;
         }
 
-       @keyframes tap-scale {
-       0% { transform: scale(1); }
-       50% { transform: scale(0.95); }
-       100% { transform: scale(1); }
-      }
+        @keyframes tap-scale {
+          0% { transform: scale(1); }
+          50% { transform: scale(0.95); }
+          100% { transform: scale(1); }
+        }
 
-    .animate-tap-scale {
-      animation: tap-scale 0.2s ease-in-out;
-    }
+        .animate-tap-scale {
+          animation: tap-scale 0.2s ease-in-out;
+        }
       `}</style>
     </div>
-  )
+  );
 }
-
-
-// bg-gradient-to-br from-blue-600 to-navy-800 rounded-full flex items-center justify-center shadow-2xl border-8 border-blue-400/30

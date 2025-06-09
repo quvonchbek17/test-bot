@@ -14,13 +14,17 @@ import { Toast } from '@/components/toast';
 import { ProfilePage } from '@/components/profile-page';
 import io from 'socket.io-client';
 import LoadingPage from '@/components/ui/loading';
-
-const socket = io(`http://localhost:5000/users`);
-
+import { useSocket } from '@/lib/SocketContext';
 
 export type Page = 'home' | 'mine' | 'earn' | 'friends' | 'airdrop' | 'gamedev' | 'settings' | 'profile';
 
 export default function HamsterKombatApp() {
+
+  const { usersSocket } = useSocket()
+
+  if (!usersSocket) {
+    return <LoadingPage />
+  }
 
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -39,16 +43,63 @@ export default function HamsterKombatApp() {
   };
 
   useEffect(() => {
-    socket.on('userUpdate', (data) => {
-      console.log(data)
-      setUser(data)
-    })
+    let defaultUser = { id: "1772", first_name: "Eshmat", coins: 0, level: 1, energy: 1000, energyCapacity: 1000, totalTaps: 0, energyQuality: 1, clickQuality: 1 }
+    if (usersSocket && defaultUser.id) {
+      usersSocket.emit('createOrGetUser', defaultUser)
+      usersSocket.on('createOrGetUserResponse', (data) => {
+        setUser(prev => {
+          if (JSON.stringify(prev) !== JSON.stringify(data)) {
+            return data;
+          }
+          return prev;
+        });
+      });
+    }
   }, [])
 
-  const renderPage = () => {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black max-w-md mx-auto relative overflow-hidden flex flex-col">
+      <Script
+        src="https://telegram.org/js/telegram-web-app.js"
+        strategy="lazyOnload"
+        onLoad={() => {
+          const app = (window as any).Telegram?.WebApp;
+          // showToast(JSON.stringify(app), "info");
+          if (app) {
+            app.ready();
+            const telegramUser = app.initDataUnsafe?.user;
+            if (telegramUser) {
+              usersSocket.emit('createOrGetUser', {id: telegramUser.id, first_name: telegramUser.first_name,  last_name: telegramUser.last_name, username: telegramUser.username})
+              usersSocket.on('createOrGetUserResponse', (data) => {
+                setUser(prev => {
+                  if (JSON.stringify(prev) !== JSON.stringify(data)) {
+                    return data;
+                  }
+                  return prev;
+                });
+              });
+              setUser(telegramUser)
+            } else {
+              // setError('Foydalanuvchi ma\'lumotlari mavjud emas.');
+              // showToast('Foydalanuvchi ma\'lumotlari mavjud emas.', 'error');
+            }
+          } else {
+            // setError('Ilova Telegram mijozidan ochilmagan.');
+            // showToast('Ilova Telegram mijozidan ochilmagan.', 'error');
+          }
+        }}
+      />
+
+      <div className="flex-1 pb-20">{user ? renderPage() : <LoadingPage />}</div>
+      <BottomNavigation currentPage={currentPage} onPageChange={setCurrentPage} />
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+    </div>
+  );
+
+  function renderPage() {
     switch (currentPage) {
       case 'home':
-        return <MainDashboard showToast={showToast} tgUser={user} />;
+        return <MainDashboard showToast={showToast} tgUser={user} setCurrentPage={setCurrentPage} />;
       case 'mine':
         return <MinePage showToast={showToast} tgUser={user} />;
       case 'earn':
@@ -61,44 +112,10 @@ export default function HamsterKombatApp() {
         return <GameDevPage showToast={showToast} tgUser={user} />;
       case 'settings':
         return <SettingsPage showToast={showToast} tgUser={user} />;
-      case "profile":
-        return <ProfilePage showToast={showToast} tgUser={user} />
+      case 'profile':
+        return <ProfilePage showToast={showToast} tgUser={user} />;
       default:
-        return <MainDashboard showToast={showToast} tgUser={user} />;
+        return <MainDashboard showToast={showToast} tgUser={user} setCurrentPage={setCurrentPage} />;
     }
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black max-w-md mx-auto relative overflow-hidden flex flex-col">
-      <Script
-        src="https://telegram.org/js/telegram-web-app.js"
-        strategy="lazyOnload"
-        onLoad={() => {
-          let a = { id: String(Math.floor(Math.random() * 100000)), first_name: "Eshmat", coins: 0 }
-          socket.emit('createOrGetUser', a)
-          setUser(a as any)
-          const app = (window as any).Telegram?.WebApp;
-          showToast(JSON.stringify(app), "info");
-          if (app) {
-            app.ready();
-            const telegramUser = app.initDataUnsafe?.user;
-            if (telegramUser) {
-              setUser(telegramUser)
-              showToast(`Xush kelibsiz, ${telegramUser?.username || telegramUser?.first_name || telegramUser?.last_name}!`, 'success');
-            } else {
-              setError('Foydalanuvchi ma\'lumotlari mavjud emas.');
-              showToast('Foydalanuvchi ma\'lumotlari mavjud emas.', 'error');
-            }
-          } else {
-            setError('Ilova Telegram mijozidan ochilmagan.');
-            showToast('Ilova Telegram mijozidan ochilmagan.', 'error');
-          }
-        }}
-      />
-
-      <div className="flex-1 pb-20">{user ? renderPage(): <LoadingPage/>}</div>
-      <BottomNavigation currentPage={currentPage} onPageChange={setCurrentPage} />
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </div>
-  );
+  }
 }
