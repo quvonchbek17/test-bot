@@ -42,21 +42,6 @@ export default function HamsterKombatApp() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  useEffect(() => {
-    let defaultUser = { id: "1772", first_name: "Eshmat", coins: 0, level: 1, energy: 1000, energyCapacity: 1000, totalTaps: 0, energyQuality: 1, clickQuality: 1 }
-    if (usersSocket && defaultUser.id) {
-      usersSocket.emit('createOrGetUser', defaultUser)
-      usersSocket.on('createOrGetUserResponse', (data) => {
-        setUser(prev => {
-          if (JSON.stringify(prev) !== JSON.stringify(data)) {
-            return data;
-          }
-          return prev;
-        });
-      });
-    }
-  }, [])
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black max-w-md mx-auto relative overflow-hidden flex flex-col">
       <Script
@@ -89,7 +74,7 @@ export default function HamsterKombatApp() {
           }
         }}
       />
-
+       <div>{JSON.stringify(user)}</div>
       <div className="flex-1 pb-20">{user ? renderPage() : <LoadingPage />}</div>
       <BottomNavigation currentPage={currentPage} onPageChange={setCurrentPage} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
