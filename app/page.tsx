@@ -62,6 +62,8 @@ export default function HamsterKombatApp() {
     setTimeout(() => setToast(null), 3000);
   };
 
+  return <h1 className='text-red-500'>{JSON.stringify(isSocketConnected)}</h1>
+
   if (!usersSocket || !isSocketConnected) {
     return <LoadingPage />
   }
