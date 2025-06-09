@@ -76,7 +76,7 @@ export default function HamsterKombatApp() {
       />
        <div>{JSON.stringify(user)}</div>
        <div className='text-red'>{process.env.NEXT_PUBLIC_USERS_SOCKET_URL}</div>
-       <div className='text-white'>{JSON.stringify(usersSocket)}</div>
+       <div className='text-white'>{`${usersSocket.active} ${usersSocket.connected}`}</div>
       <div className="flex-1 pb-20">{user ? renderPage() : <LoadingPage />}</div>
       <BottomNavigation currentPage={currentPage} onPageChange={setCurrentPage} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
