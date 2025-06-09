@@ -45,7 +45,6 @@ export default function HamsterKombatApp() {
   }, [usersSocket, isSocketConnected]);
 
 
-
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [user, setUser] = useState<{
@@ -62,8 +61,6 @@ export default function HamsterKombatApp() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  return <h1 className='text-red-500'>{JSON.stringify(isSocketConnected)}</h1>
-
   if (!usersSocket || !isSocketConnected) {
     return <LoadingPage />
   }
@@ -79,7 +76,7 @@ export default function HamsterKombatApp() {
           if (app) {
             app.ready();
             const telegramUser = app.initDataUnsafe?.user;
-            if (telegramUser && usersSocket) {
+            if (telegramUser && usersSocket?.connected) {
               usersSocket.emit('createOrGetUser', {id: telegramUser.id, first_name: telegramUser.first_name,  last_name: telegramUser.last_name, username: telegramUser.username})
               usersSocket.on('createOrGetUserResponse', (data) => {
                 setUser(prev => {
