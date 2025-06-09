@@ -12,20 +12,13 @@ import { SettingsPage } from '@/components/settings-page';
 import { BottomNavigation } from '@/components/bottom-navigation';
 import { Toast } from '@/components/toast';
 import { ProfilePage } from '@/components/profile-page';
-import io from 'socket.io-client';
-import LoadingPage from '@/components/ui/loading';
 import { useSocket } from '@/lib/SocketContext';
+import LoadingPage from '@/components/ui/loading';
 
 export type Page = 'home' | 'mine' | 'earn' | 'friends' | 'airdrop' | 'gamedev' | 'settings' | 'profile';
 
 export default function HamsterKombatApp() {
-
-  const { usersSocket } = useSocket()
-
-  if (!usersSocket) {
-    return <LoadingPage />
-  }
-
+  const { usersSocket } = useSocket();
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [user, setUser] = useState<{
@@ -35,49 +28,74 @@ export default function HamsterKombatApp() {
     username?: string;
     language_code?: string;
   } | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
+  // Socket ulanishini tekshirish va Telegram ma'lumotlarini olish
+  useEffect(() => {
+    if (!usersSocket) return;
+
+    // Socket ulanishini tinglash
+    usersSocket.on('connect', () => {
+      setIsSocketConnected(true);
+    });
+
+    usersSocket.on('disconnect', () => {
+      setIsSocketConnected(false);
+    });
+
+    // Telegram ma'lumotlarini olish
+    const app = (window as any).Telegram?.WebApp;
+    if (app && isSocketConnected) {
+      app.ready();
+      const telegramUser = app.initDataUnsafe?.user;
+      if (telegramUser) {
+        usersSocket.emit('createOrGetUser', {
+          id: telegramUser.id,
+          first_name: telegramUser.first_name,
+          last_name: telegramUser.last_name,
+          username: telegramUser.username,
+        });
+        usersSocket.on('createOrGetUserResponse', (data) => {
+          setUser((prev) => {
+            if (JSON.stringify(prev) !== JSON.stringify(data)) {
+              return data;
+            }
+            return prev;
+          });
+        });
+        setUser(telegramUser);
+      } else {
+        showToast("Foydalanuvchi ma'lumotlari mavjud emas.", 'error');
+      }
+    } else if (!app) {
+      showToast("Ilova Telegram mijozidan ochilmagan.", 'error');
+    }
+
+    // Tozalash
+    return () => {
+      usersSocket.off('connect');
+      usersSocket.off('disconnect');
+      usersSocket.off('createOrGetUserResponse');
+    };
+  }, [usersSocket, isSocketConnected]);
+
+  // Socket ulanmaguncha yoki foydalanuvchi ma'lumotlari olinmaguncha LoadingPage ko'rsatish
+  if (!usersSocket || !isSocketConnected || !user) {
+    return <LoadingPage />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black max-w-md mx-auto relative overflow-hidden flex flex-col">
       <Script
         src="https://telegram.org/js/telegram-web-app.js"
         strategy="lazyOnload"
-        onLoad={() => {
-          const app = (window as any).Telegram?.WebApp;
-          // showToast(JSON.stringify(app), "info");
-          if (app) {
-            app.ready();
-            const telegramUser = app.initDataUnsafe?.user;
-            if (telegramUser) {
-              usersSocket.emit('createOrGetUser', {id: telegramUser.id, first_name: telegramUser.first_name,  last_name: telegramUser.last_name, username: telegramUser.username})
-              usersSocket.on('createOrGetUserResponse', (data) => {
-                setUser(prev => {
-                  if (JSON.stringify(prev) !== JSON.stringify(data)) {
-                    return data;
-                  }
-                  return prev;
-                });
-              });
-              setUser(telegramUser)
-            } else {
-              // setError('Foydalanuvchi ma\'lumotlari mavjud emas.');
-              // showToast('Foydalanuvchi ma\'lumotlari mavjud emas.', 'error');
-            }
-          } else {
-            // setError('Ilova Telegram mijozidan ochilmagan.');
-            // showToast('Ilova Telegram mijozidan ochilmagan.', 'error');
-          }
-        }}
       />
-       <div>{JSON.stringify(user)}</div>
-       <div className='text-red'>{process.env.NEXT_PUBLIC_USERS_SOCKET_URL}</div>
-       <div className='text-white'>{`${usersSocket.active} ${usersSocket.connected}`}</div>
-      <div className="flex-1 pb-20">{user ? renderPage() : <LoadingPage />}</div>
+      <div className="flex-1 pb-20">{renderPage()}</div>
       <BottomNavigation currentPage={currentPage} onPageChange={setCurrentPage} />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
