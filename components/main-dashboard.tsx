@@ -195,7 +195,7 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
       <div className="flex-1 flex justify-center items-center">
         <div
           className={`relative cursor-pointer transition-transform duration-150 ${tappingAnimation ? "animate-tap-scale" : ""} hover:scale-105 ${energy <= clickQuality ? "opacity-50 cursor-not-allowed" : ""}`}
-          onClick={handleTap}
+          //onClick={handleTap}
           onTouchStart={handleTap}
         >
           <div className="w-[400px] h-[400px] relative">
