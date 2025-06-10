@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Copy, Users, Gift, Crown, User } from "lucide-react"
+import { useSocket } from "@/lib/SocketContext"
 
 interface FriendsPageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
@@ -55,8 +56,28 @@ const friendsList = [
   },
 ]
 
-export function FriendsPage({ showToast }: FriendsPageProps) {
-  const [referralLink] = useState("https://t.me/coinmainertestbot?start=ibc88273b8ybc2")
+export function FriendsPage({ showToast, tgUser }: FriendsPageProps) {
+  const { coinSocket } = useSocket();
+  const [user, setUser] = useState(tgUser)
+  const [referralLink, setReferralLink] = useState(`https://t.me/coinmainertestbot?start=${tgUser.refCode}`)
+
+    // Socket.IO ulanishini boshqarish
+    useEffect(() => {
+      if (coinSocket) {
+        coinSocket.emit('getUserDatas', { id: tgUser.id });
+        coinSocket.on('getUserDatasResponse', (data) => {
+          setReferralLink(`https://t.me/coinmainertestbot?start=${tgUser.refCode}`)
+          setUser(data)
+        });
+
+        // Tozalash
+        return () => {
+          coinSocket.off('getUserDatasResponse');
+        };
+      } else {
+        showToast("Socket not connected!", "error");
+      }
+    }, [coinSocket, tgUser.id]);
 
   const totalFriends = friendsList?.length
   const premiumFriends = friendsList.filter((friend) => friend.isPremium)?.length
