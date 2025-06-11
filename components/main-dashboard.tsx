@@ -56,7 +56,6 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
         setLevel(data.level)
         setClickQuality(data.clickQuality)
 
-
       const levelData = calculateLevel(data.coins);
       if (levelData.level > level) {
         setLevel(levelData.level);
@@ -114,7 +113,7 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
 
     if (coinSocket) {
       coinSocket.emit('addCoin', {
-        userId: user?.id,
+        id: user?.id,
         coinCount: clickQuality,
         level,
         energy,
