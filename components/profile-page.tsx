@@ -276,7 +276,7 @@ const calculateTimeSinceJoined = (joinDate: string | Date): string => {
             </div>
 
             <div className="flex items-center space-x-3">
-              <Star className={`w-5 h-5 text-fuchsia-400`} />
+              <User className={`w-5 h-5 text-fuchsia-400`} />
               <div>
                 <div className="font-bold text-white">
                   Since Join
