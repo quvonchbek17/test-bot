@@ -244,16 +244,16 @@ const calculateTimeSinceJoined = (joinDate: string | Date): string => {
         <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
           <CardContent className="p-4 text-center">
             <Coins className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-white">{user?.coins?.toLocaleString()}</div>
+            <div className="text-xl font-bold text-white">{user?.coins?.toLocaleString()}</div>
             <div className="text-sm text-gray-400">Total Coins</div>
           </CardContent>
         </Card>
 
         <Card className="bg-black/80 backdrop-blur-sm border border-blue-500/30 shadow-lg">
           <CardContent className="p-4 text-center">
-            <Target className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-white">{user?.totalTaps?.toLocaleString()}</div>
-            <div className="text-sm text-gray-400">Total Taps</div>
+            <Zap className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+            <div className="text-xl font-bold text-white">{user?.energyCapacity?.toLocaleString()}</div>
+            <div className="text-sm text-gray-400">Energy Capacity</div>
           </CardContent>
         </Card>
       </div>
