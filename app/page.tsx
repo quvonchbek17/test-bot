@@ -56,20 +56,6 @@ export default function HamsterKombatApp() {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-     if(usersSocket){
-          usersSocket.emit('createOrGetUser', { id: "1111111",  first_name: "Eshmat" })
-    usersSocket.on('createOrGetUserResponse', (data) => {
-      setUser(prev => {
-        if (JSON.stringify(prev) !== JSON.stringify(data)) {
-          return data;
-        }
-        return prev;
-      });
-    });
-     }
-  })
-
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
