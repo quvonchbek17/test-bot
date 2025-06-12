@@ -196,6 +196,7 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
           className={`relative cursor-pointer transition-transform duration-150 ${tappingAnimation ? "animate-tap-scale" : ""} hover:scale-105 ${energy <= clickQuality ? "opacity-50 cursor-not-allowed" : ""}`}
           //onClick={handleTap}
           onTouchStart={handleTap}
+          onContextMenu={(e) => e.preventDefault()} 
         >
           <div className="w-[400px] h-[400px] relative">
             <Image
@@ -204,6 +205,7 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
               width={400}
               height={400}
               className="object-contain bg-transparent"
+              draggable={false}
             />
           </div>
 
