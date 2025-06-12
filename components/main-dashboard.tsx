@@ -198,15 +198,7 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
           onTouchStart={handleTap}
           onContextMenu={(e) => e.preventDefault()} 
         >
-          <div className="w-[400px] h-[400px] relative">
-            <Image
-              src="/coin-icon.png"
-              alt="Mouse Icon"
-              width={400}
-              height={400}
-              className="object-contain bg-transparent"
-              draggable={false}
-            />
+          <div className="w-[400px] h-[400px] relative bg-[url('/coin-icon.png')] bg-contain bg-center bg-no-repeat">
           </div>
 
           {floatingCoins.map((coin) => (
