@@ -241,11 +241,11 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
           }
           100% {
             opacity: 0;
-            transform: translateY(-150px);
+            transform: translateY(-350px);
           }
         }
         .animate-float-up {
-          animation: float-up 1.5s ease-out forwards;
+          animation: float-up 3s ease-out forwards;
         }
 
         @keyframes tap-scale {
