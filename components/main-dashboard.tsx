@@ -181,7 +181,7 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
             <div
               className="bg-gradient-to-r from-blue-500 to-cyan-400 h-2 rounded-full transition-all duration-300"
               style={{
-                width: `${Math.max(0, 100 - (coinsToNextLevel / (1000 * level)) * 100)}%`,
+                width: `${coinsToNextLevel ? Math.max(0, 100 - (coinsToNextLevel / (1000 * level)) * 100): 0}%`,
               }}
             />
           </div>
