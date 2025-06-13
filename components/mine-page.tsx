@@ -11,7 +11,6 @@ import { useUser } from "@/lib/UserContext"
 
 interface MinePageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void
-  tgUser: any
 }
 
 const filters = ["All", "Refill", "Capacity", "Click"]
@@ -60,7 +59,7 @@ const upgrades = [
   },
 ]
 
-export function MinePage({ showToast, tgUser }: MinePageProps) {
+export function MinePage({ showToast }: MinePageProps) {
   const { coinSocket } = useSocket();
   const [selectedFilter, setSelectedFilter] = useState("All")
   const {user, setUser} = useUser()
@@ -70,19 +69,6 @@ export function MinePage({ showToast, tgUser }: MinePageProps) {
     return u.type === selectedFilter.toLowerCase()
   })
 
-  useEffect(() => {
-    if (coinSocket) {
-      coinSocket.emit('getUserDatas', { id: tgUser.id });
-      coinSocket.on('getUserDatasResponse', (data) => {
-        setUser(data)
-      });
-
-      // Tozalash
-      return () => {
-        coinSocket.off('getUserDatasResponse');
-      };
-    } 
-  }, [coinSocket, tgUser.id]);
 
   const handleBuy = (upgrade: typeof upgrades[0]) => {
     if (coinSocket) {
