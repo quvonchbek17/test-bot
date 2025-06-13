@@ -18,44 +18,44 @@ const filters = ["All", "Refill", "Capacity", "Click"]
 const upgrades = [
   // Refill Upgrades
   {
-    id: 1, name: "Refill Mini", desc: "+1 energy/sec", cost: 10000, type: "refill", bonus: "+1/sec", icon: <Zap className="w-4 h-4 text-yellow-400" />,
+    id: 1, name: "Refill Mini", desc: "+1 energy/sec", cost: 10000, type: "refill", bonus: "+1/sec", quality: 1, icon: <Zap className="w-4 h-4 text-yellow-400" />,
   },
   {
-    id: 2, name: "Refill Plus", desc: "+5 energy/sec", cost: 50000, type: "refill", bonus: "+5/sec", icon: <Zap className="w-4 h-4 text-yellow-400" />,
+    id: 2, name: "Refill Plus", desc: "+5 energy/sec", cost: 50000, type: "refill", bonus: "+5/sec", quality: 5, icon: <Zap className="w-4 h-4 text-yellow-400" />,
   },
   {
-    id: 3, name: "Refill Pro", desc: "+10 energy/sec", cost: 100000, type: "refill", bonus: "+10/sec", icon: <Zap className="w-4 h-4 text-yellow-400" />,
+    id: 3, name: "Refill Pro", desc: "+10 energy/sec", cost: 100000, type: "refill", bonus: "+10/sec", quality: 10, icon: <Zap className="w-4 h-4 text-yellow-400" />,
   },
   {
-    id: 4, name: "Refill Elite", desc: "+20 energy/sec", cost: 200000, type: "refill", bonus: "+20/sec", icon: <Zap className="w-4 h-4 text-yellow-400" />,
+    id: 4, name: "Refill Elite", desc: "+20 energy/sec", cost: 200000, type: "refill", bonus: "+20/sec", quality: 20, icon: <Zap className="w-4 h-4 text-yellow-400" />,
   },
 
   // Capacity Upgrades
   {
-    id: 5, name: "Capacity Mini", desc: "+500 energy cap", cost: 20000, type: "capacity", bonus: "+500 cap", icon: <BatteryFull className="w-4 h-4 text-green-400" />,
+    id: 5, name: "Capacity Mini", desc: "+500 energy cap", cost: 20000, type: "capacity", bonus: "+500 cap", quality: 500, icon: <BatteryFull className="w-4 h-4 text-green-400" />,
   },
   {
-    id: 6, name: "Capacity Plus", desc: "+1500 energy cap", cost: 50000, type: "capacity", bonus: "+1500 cap", icon: <BatteryFull className="w-4 h-4 text-green-400" />,
+    id: 6, name: "Capacity Plus", desc: "+1500 energy cap", cost: 50000, type: "capacity", bonus: "+1500 cap", quality: 1500, icon: <BatteryFull className="w-4 h-4 text-green-400" />,
   },
   {
-    id: 7, name: "Capacity Pro", desc: "+3000 energy cap", cost: 100000, type: "capacity", bonus: "+3000 cap", icon: <BatteryFull className="w-4 h-4 text-green-400" />,
+    id: 7, name: "Capacity Pro", desc: "+3000 energy cap", cost: 100000, type: "capacity", bonus: "+3000 cap", quality: 3000, icon: <BatteryFull className="w-4 h-4 text-green-400" />,
   },
   {
-    id: 8, name: "Capacity Elite", desc: "+6000 energy cap", cost: 300000, type: "capacity", bonus: "+6000 cap", icon: <BatteryFull className="w-4 h-4 text-green-400" />,
+    id: 8, name: "Capacity Elite", desc: "+6000 energy cap", cost: 300000, type: "capacity", bonus: "+6000 cap", quality: 6000, icon: <BatteryFull className="w-4 h-4 text-green-400" />,
   },
 
   // Click Quality Upgrades
   {
-    id: 9, name: "Click Mini", desc: "+1 coins/tap", cost: 20000, type: "click", bonus: "+1/tap", icon: <MousePointerClick className="w-4 h-4 text-blue-400" />,
+    id: 9, name: "Click Mini", desc: "+1 coins/tap", cost: 20000, type: "click", bonus: "+1/tap", quality: 1, icon: <MousePointerClick className="w-4 h-4 text-blue-400" />,
   },
   {
-    id: 10, name: "Click Plus", desc: "+3 coins/tap", cost: 60000, type: "click", bonus: "+3/tap", icon: <MousePointerClick className="w-4 h-4 text-blue-400" />,
+    id: 10, name: "Click Plus", desc: "+3 coins/tap", cost: 60000, type: "click", bonus: "+3/tap", quality: 3, icon: <MousePointerClick className="w-4 h-4 text-blue-400" />,
   },
   {
-    id: 11, name: "Click Pro", desc: "+5 coins/tap", cost: 100000, type: "click", bonus: "+5/tap", icon: <MousePointerClick className="w-4 h-4 text-blue-400" />,
+    id: 11, name: "Click Pro", desc: "+5 coins/tap", cost: 100000, type: "click", bonus: "+5/tap", quality: 5, icon: <MousePointerClick className="w-4 h-4 text-blue-400" />,
   },
   {
-    id: 12, name: "Click Elite", desc: "+10 coins/tap", cost: 200000, type: "click", bonus: "+10/tap", icon: <MousePointerClick className="w-4 h-4 text-blue-400" />,
+    id: 12, name: "Click Elite", desc: "+10 coins/tap", cost: 200000, type: "click", bonus: "+10/tap", quality: 10, icon: <MousePointerClick className="w-4 h-4 text-blue-400" />,
   },
 ]
 
@@ -86,14 +86,42 @@ export function MinePage({ showToast, tgUser }: MinePageProps) {
   }, [coinSocket, tgUser.id]);
 
   const handleBuy = (upgrade: typeof upgrades[0]) => {
-    if (user.coins >= upgrade.cost) {
-      setUser((prevUser: any) => ({
-        ...prevUser,
-        coins: (prevUser.coins) - upgrade.cost
-      }));
+    if (coinSocket) {
+      if (user.coins >= upgrade.cost) {
+        setUser((prevUser: any) => ({
+          ...prevUser,
+          coins: (prevUser.coins) - upgrade.cost
+        }));
+
+        if (upgrade.type === "refill") {
+          setUser((prevUser: any) => ({
+            ...prevUser,
+            energyQuality: (prevUser.energyQuality) + upgrade.quality
+          }));
+          coinSocket.emit('updateEnergyAndClick', { id: user.id, cost: upgrade.cost, energyQuality: upgrade.quality });
+        }
+
+        if (upgrade.type === "capacity") {
+          setUser((prevUser: any) => ({
+            ...prevUser,
+            energyCapacity: (prevUser.energyCapacity) + upgrade.quality
+          }));
+          coinSocket.emit('updateEnergyAndClick', { id: user.id, cost: upgrade.cost, energyCapacity: upgrade.quality });
+        }
+
+        if (upgrade.type === "click") {
+          setUser((prevUser: any) => ({
+            ...prevUser,
+            clickQuality: (prevUser.clickQuality) + upgrade.quality
+          }));
+          coinSocket.emit('updateEnergyAndClick', { id: user.id, cost: upgrade.cost, clickQuality: upgrade.quality });
+        }
+      }
+
     } else {
-      alert("Not enough coins!")
+      showToast("Server not connected!", "error");
     }
+
   }
 
   return (
@@ -117,8 +145,8 @@ export function MinePage({ showToast, tgUser }: MinePageProps) {
             onClick={() => setSelectedFilter(f)}
             variant={selectedFilter === f ? "default" : "outline"}
             className={`whitespace-nowrap ${selectedFilter === f
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "bg-black/60 hover:bg-black/80 text-gray-300 border-blue-500/30"
+              ? "bg-blue-600 hover:bg-blue-700 text-white"
+              : "bg-black/60 hover:bg-black/80 text-gray-300 border-blue-500/30"
               }`}
             size="sm"
           >
