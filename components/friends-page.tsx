@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Copy, Users, Gift, Crown, User, Coins } from "lucide-react"
 import { useSocket } from "@/lib/SocketContext"
+import { useUser } from "@/lib/UserContext"
 
 interface FriendsPageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
@@ -15,7 +16,7 @@ interface FriendsPageProps {
 
 export function FriendsPage({ showToast, tgUser }: FriendsPageProps) {
   const { coinSocket } = useSocket();
-  const [user, setUser] = useState(tgUser)
+  const {user, setUser} = useUser()
   const [referralLink, setReferralLink] = useState(`https://t.me/coinmainertestbot?start=${user.refCode}`)
 
     // Socket.IO ulanishini boshqarish
@@ -31,8 +32,6 @@ export function FriendsPage({ showToast, tgUser }: FriendsPageProps) {
         return () => {
           coinSocket.off('getUserDatasResponse');
         };
-      } else {
-        showToast("Socket not connected!", "error");
       }
     }, [coinSocket, tgUser.id]);
 
