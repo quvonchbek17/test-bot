@@ -116,6 +116,8 @@ export function MinePage({ showToast, tgUser }: MinePageProps) {
           }));
           coinSocket.emit('updateEnergyAndClick', { id: user.id, cost: upgrade.cost, clickQuality: upgrade.quality });
         }
+
+        showToast(upgrade.desc, "success")
       }
 
     } else {
