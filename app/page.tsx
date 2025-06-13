@@ -52,7 +52,7 @@ export default function HamsterKombatApp() {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 100000);
   };
 
   if (!usersSocket || !isSocketConnected) {
@@ -99,13 +99,13 @@ export default function HamsterKombatApp() {
   function renderPage() {
     switch (currentPage) {
       case 'home':
-        return <MainDashboard showToast={showToast} tgUser={user} setCurrentPage={setCurrentPage} />;
+        return <MainDashboard showToast={showToast} setCurrentPage={setCurrentPage} />;
       case 'mine':
-        return <MinePage showToast={showToast} tgUser={user} />;
+        return <MinePage showToast={showToast} />;
       case 'earn':
         return <EarnPage showToast={showToast} tgUser={user} />;
       case 'friends':
-        return <FriendsPage showToast={showToast} tgUser={user} />;
+        return <FriendsPage showToast={showToast} />;
       case 'airdrop':
         return <AirdropPage showToast={showToast} tgUser={user} />;
       case 'gamedev':
@@ -113,9 +113,9 @@ export default function HamsterKombatApp() {
       case 'settings':
         return <SettingsPage showToast={showToast} tgUser={user} />;
       case 'profile':
-        return <ProfilePage showToast={showToast} tgUser={user} />;
+        return <ProfilePage showToast={showToast} />;
       default:
-        return <MainDashboard showToast={showToast} tgUser={user} setCurrentPage={setCurrentPage} />;
+        return <MainDashboard showToast={showToast} setCurrentPage={setCurrentPage} />;
     }
   }
 }
