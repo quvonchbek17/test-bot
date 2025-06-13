@@ -55,8 +55,10 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
         setEnergy(data.energy)
         setLevel(data.level)
         setClickQuality(data.clickQuality)
+        setMaxEnergy(data.energyCapacity)
+        setenergyQuality(data.energyQuality)
 
-      const levelData = calculateLevel(data.coins);
+      const levelData = calculateLevel(data.levelCoins);
       if (levelData.level > level) {
         setLevel(levelData.level);
       }
@@ -97,12 +99,13 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
     setUser((prevUser: any) => ({
       ...prevUser,
       coins: (prevUser.coins) + clickQuality,
+      levelCoins: (prevUser.levelCoins) + clickQuality,
       energy: (prevUser.energy) - clickQuality,
       totalTaps: (prevUser.totalTaps) + 1,
     }));
     setEnergy((prev: any) => Math.max(0, prev - clickQuality));
 
-    const levelData = calculateLevel(user.coins);
+    const levelData = calculateLevel(user.levelCoins);
 
     if (levelData.level > level) {
       setLevel(levelData.level);
@@ -116,6 +119,7 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
         id: user?.id,
         coinCount: clickQuality,
         level,
+        levelCoins: clickQuality,
         energy,
         energyCapacity: maxEnergy,
         totalTaps: user.totalTaps,
