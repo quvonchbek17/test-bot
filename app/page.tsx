@@ -15,6 +15,7 @@ import { ProfilePage } from '@/components/profile-page';
 import io from 'socket.io-client';
 import LoadingPage from '@/components/ui/loading';
 import { useSocket } from '@/lib/SocketContext';
+import { useUser } from '@/lib/UserContext';
 
 export type Page = 'home' | 'mine' | 'earn' | 'friends' | 'airdrop' | 'gamedev' | 'settings' | 'profile';
 
@@ -36,7 +37,6 @@ export default function HamsterKombatApp() {
       setIsSocketConnected(false);
     });
 
-
     // Tozalash
     return () => {
       usersSocket.off('connect');
@@ -47,13 +47,7 @@ export default function HamsterKombatApp() {
 
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-  const [user, setUser] = useState<{
-    id: number;
-    first_name?: string;
-    last_name?: string;
-    username?: string;
-    language_code?: string;
-  } | null>(null);
+  const {user, setUser} = useUser()
   const [error, setError] = useState<string | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -79,7 +73,7 @@ export default function HamsterKombatApp() {
             if (telegramUser && usersSocket?.connected) {
               usersSocket.emit('createOrGetUser', { id: telegramUser.id, first_name: telegramUser.first_name, last_name: telegramUser.last_name, username: telegramUser.username })
               usersSocket.on('createOrGetUserResponse', (data) => {
-                setUser(prev => {
+                setUser((prev: any) => {
                   if (JSON.stringify(prev) !== JSON.stringify(data)) {
                     return data;
                   }
