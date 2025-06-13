@@ -57,11 +57,12 @@ export function Toast({ message, type, onClose }: ToastProps) {
         className={`
           flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10
           bg-gradient-to-br ${getBackground()}
-          text-white shadow-lg backdrop-blur-md max-w-xs w-full
+          text-white shadow-lg backdrop-blur-md
+          max-w-[300px] w-fit
         `}
       >
         {getIcon()}
-        <span className="text-sm font-medium break-words flex-1">
+        <span className="text-sm font-medium whitespace-nowrap">
           {message}
         </span>
         <button
