@@ -11,37 +11,19 @@ import { useUser } from "@/lib/UserContext"
 
 interface FriendsPageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
-  tgUser: any
 }
 
-export function FriendsPage({ showToast, tgUser }: FriendsPageProps) {
+export function FriendsPage({ showToast }: FriendsPageProps) {
   const { coinSocket } = useSocket();
   const {user, setUser} = useUser()
   const [referralLink, setReferralLink] = useState(`https://t.me/coinmainertestbot?start=${user.refCode}`)
-
-    // Socket.IO ulanishini boshqarish
-    useEffect(() => {
-      if (coinSocket) {
-        coinSocket.emit('getUserDatas', { id: tgUser.id });
-        coinSocket.on('getUserDatasResponse', (data) => {
-          setReferralLink(`https://t.me/coinmainertestbot?start=${data.refCode}`)
-          setUser(data)
-        });
-
-        // Tozalash
-        return () => {
-          coinSocket.off('getUserDatasResponse');
-        };
-      }
-    }, [coinSocket, tgUser.id]);
-
 
   const copyReferralLink = async () => {
     try {
       await navigator.clipboard.writeText(referralLink)
       showToast("Referral link copied to clipboard!")
     } catch (err) {
-      showToast("Failed to copy link", "error")
+      // showToast("Failed to copy link", "error")
     }
   }
 
