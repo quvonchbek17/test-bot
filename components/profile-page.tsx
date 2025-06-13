@@ -15,12 +15,11 @@ import { useSocket } from "@/lib/SocketContext"
 import { useUser } from "@/lib/UserContext"
 
 interface ProfilePageProps {
-  showToast: (message: string, type?: "success" | "error" | "info") => void,
-  tgUser: any
+  showToast: (message: string, type?: "success" | "error" | "info") => void
 }
 
 
-export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
+export function ProfilePage({ showToast }: ProfilePageProps) {
   const { coinSocket } = useSocket();
   const textRef = useRef<HTMLHeadingElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -34,7 +33,7 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
   // Socket.IO ulanishini boshqarish
   useEffect(() => {
     if (coinSocket) {
-      coinSocket.emit('getUserDatas', { id: tgUser.id });
+      coinSocket.emit('getUserDatas', { id: user.id });
       coinSocket.on('getUserDatasResponse', (data) => {
         setUser(data)
       });
@@ -44,7 +43,7 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
         coinSocket.off('getUserDatasResponse');
       };
     }
-  }, [coinSocket, tgUser.id]);
+  }, [coinSocket, user.id]);
 
   useEffect(() => {
 
@@ -78,7 +77,7 @@ const calculateTimeSinceJoined = (joinDate: string | Date): string => {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <User className="w-6 h-6" />
-              <span className="text-[20px]">ID: {tgUser?.id || "Use in Telegram"}</span>
+              <span className="text-[20px]">ID: {user?.id || "Use in Telegram"}</span>
             </div>
             <Button
               size="sm"
@@ -130,7 +129,7 @@ const calculateTimeSinceJoined = (joinDate: string | Date): string => {
                       className={`inline-block text-2xl font-bold ${shouldScroll ? "animate-scroll" : ""
                         }`}
                     >
-                      {tgUser?.first_name || tgUser?.last_name ? `${tgUser?.first_name || ""} ${tgUser?.last_name || ""}` : "Use in Telegram"}
+                      {user?.first_name || user?.last_name ? `${user?.first_name || ""} ${user?.last_name || ""}` : "Use in Telegram"}
                     </h2>
                   </div>
                   <div className="flex items-center space-x-4 text-sm opacity-90">
