@@ -13,21 +13,20 @@ import { useUser } from "@/lib/UserContext"
 
 interface MainDashboardProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
-  tgUser: any,
   setCurrentPage: (page: Page) => void;
 }
 
-export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboardProps) {
+export function MainDashboard({ showToast, setCurrentPage }: MainDashboardProps) {
   const { coinSocket } = useSocket();
   const {user, setUser} = useUser()
   const [tappingAnimation, setTappingAnimation] = useState(false);
   const [floatingCoins, setFloatingCoins] = useState<Array<{ id: number; x: number; y: number }>>([]);
-  const [level, setLevel] = useState(tgUser.level);
+  const [level, setLevel] = useState(user.level);
   const [coinsToNextLevel, setCoinsToNextLevel] = useState(0);
-  const [energy, setEnergy] = useState(tgUser.energy);
-  const [maxEnergy, setMaxEnergy] = useState(tgUser.energyCapacity);
-  const [energyQuality, setenergyQuality] = useState(tgUser.energyQuality);
-  const [clickQuality, setClickQuality] = useState(tgUser.clickQuality);
+  const [energy, setEnergy] = useState(user.energy);
+  const [maxEnergy, setMaxEnergy] = useState(user.energyCapacity);
+  const [energyQuality, setenergyQuality] = useState(user.energyQuality);
+  const [clickQuality, setClickQuality] = useState(user.clickQuality);
 
   // Calculate level based on total coins collected
   const calculateLevel = (totalCoins: number) => {
@@ -49,31 +48,12 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
   
   // Socket.IO ulanishini boshqarish
   useEffect(() => {
-    if (coinSocket) {
-      coinSocket.emit('getUserDatas', { id: user.id });
-      coinSocket.on('getUserDatasResponse', (data) => {
-        setUser(data);
-        setEnergy(data.energy)
-        setLevel(data.level)
-        setClickQuality(data.clickQuality)
-        setMaxEnergy(data.energyCapacity)
-        setenergyQuality(data.energyQuality)
-
-      const levelData = calculateLevel(data.levelCoins);
+      const levelData = calculateLevel(user.levelCoins);
       if (levelData.level > level) {
         setLevel(levelData.level);
       }
-
       setCoinsToNextLevel(levelData.coinsToNext);
-      });
-
-
-      // Tozalash
-      return () => {
-        coinSocket.off('getUserDatasResponse');
-      };
-    }
-  }, [coinSocket, user.id, showToast]);
+  }, [user.id]);
 
   // Energy regeneration
   useEffect(() => {
