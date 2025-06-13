@@ -9,6 +9,7 @@ import { Zap, Coins, TrendingUp, Gift, Star, Flame } from "lucide-react"
 import Image from 'next/image';
 import { useSocket } from "@/lib/SocketContext"
 import { Page } from "@/app/page"
+import { useUser } from "@/lib/UserContext"
 
 interface MainDashboardProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
@@ -18,7 +19,7 @@ interface MainDashboardProps {
 
 export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboardProps) {
   const { coinSocket } = useSocket();
-  const [user, setUser] = useState(tgUser);
+  const {user, setUser} = useUser()
   const [tappingAnimation, setTappingAnimation] = useState(false);
   const [floatingCoins, setFloatingCoins] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const [level, setLevel] = useState(tgUser.level);
@@ -45,7 +46,7 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
       coinsToNext: coinsNeeded - totalCoins,
     };
   };
-
+  
   // Socket.IO ulanishini boshqarish
   useEffect(() => {
     if (coinSocket) {
@@ -71,8 +72,6 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
       return () => {
         coinSocket.off('getUserDatasResponse');
       };
-    } else {
-      showToast("Socket not connected!", "error");
     }
   }, [coinSocket, user.id, showToast]);
 
@@ -93,6 +92,7 @@ export function MainDashboard({ showToast, tgUser, setCurrentPage }: MainDashboa
     const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
 
     if (energy < clickQuality) {
+      
       return;
     }
 
