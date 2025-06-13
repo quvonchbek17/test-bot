@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Coins, Zap, BatteryFull, MousePointerClick } from "lucide-react"
 import { Search } from "lucide-react"
 import { useSocket } from "@/lib/SocketContext"
+import { useUser } from "@/lib/UserContext"
 
 interface MinePageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void
@@ -62,7 +63,7 @@ const upgrades = [
 export function MinePage({ showToast, tgUser }: MinePageProps) {
   const { coinSocket } = useSocket();
   const [selectedFilter, setSelectedFilter] = useState("All")
-  const [user, setUser] = useState(tgUser)
+  const {user, setUser} = useUser()
 
   const filteredUpgrades = upgrades.filter((u) => {
     if (selectedFilter === "All") return true
@@ -80,9 +81,7 @@ export function MinePage({ showToast, tgUser }: MinePageProps) {
       return () => {
         coinSocket.off('getUserDatasResponse');
       };
-    } else {
-      showToast("Socket not connected!", "error");
-    }
+    } 
   }, [coinSocket, tgUser.id]);
 
   const handleBuy = (upgrade: typeof upgrades[0]) => {
@@ -120,8 +119,6 @@ export function MinePage({ showToast, tgUser }: MinePageProps) {
         showToast(upgrade.desc, "success")
       }
 
-    } else {
-      showToast("Server not connected!", "error");
     }
 
   }
