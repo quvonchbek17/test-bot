@@ -12,99 +12,23 @@ import { User, Edit3, X, Trophy, Calendar, Coins, Zap, Star, TrendingUp, Crown, 
 import { TfiApple, TfiCrown, TfiCup, TfiFaceSmile, TfiInfoAlt, TfiPowerOff, TfiStatsUp, TfiUser, TfiWallet, TfiWand } from "react-icons/tfi";
 import { MdOutlineEdit } from "react-icons/md";
 import { useSocket } from "@/lib/SocketContext"
+import { useUser } from "@/lib/UserContext"
 
 interface ProfilePageProps {
   showToast: (message: string, type?: "success" | "error" | "info") => void,
   tgUser: any
 }
 
-const achievements = [
-  {
-    id: 1,
-    title: "First Steps",
-    description: "Tap 100 times",
-    icon: "👶",
-    completed: true,
-    progress: 100,
-    maxProgress: 100,
-    reward: 1000,
-  },
-  {
-    id: 2,
-    title: "Coin Collector",
-    description: "Collect 10,000 coins",
-    icon: "🪙",
-    completed: true,
-    progress: 10000,
-    maxProgress: 10000,
-    reward: 5000,
-  },
-  {
-    id: 3,
-    title: "Energy Master",
-    description: "Reach energy level 5",
-    icon: "⚡",
-    completed: false,
-    progress: 1,
-    maxProgress: 5,
-    reward: 10000,
-  },
-  {
-    id: 4,
-    title: "Level Up",
-    description: "Reach level 10",
-    icon: "⭐",
-    completed: false,
-    progress: 1,
-    maxProgress: 10,
-    reward: 15000,
-  },
-  {
-    id: 5,
-    title: "Social Butterfly",
-    description: "Invite 5 friends",
-    icon: "👥",
-    completed: false,
-    progress: 0,
-    maxProgress: 5,
-    reward: 25000,
-  },
-  {
-    id: 6,
-    title: "Millionaire",
-    description: "Collect 1,000,000 coins",
-    icon: "💰",
-    completed: true,
-    progress: 1234567,
-    maxProgress: 1000000,
-    reward: 50000,
-  },
-]
-
-const dailyStats = [
-  { label: "Taps Today", value: 1247, icon: Target, color: "text-blue-400" },
-  { label: "Coins Earned", value: 45230, icon: Coins, color: "text-yellow-400" },
-  { label: "Energy Used", value: 892, icon: Zap, color: "text-orange-400" },
-  { label: "Time Played", value: "2h 34m", icon: Clock, color: "text-green-400" },
-]
 
 export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
   const { coinSocket } = useSocket();
   const textRef = useRef<HTMLHeadingElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [user, setUser] = useState(tgUser)
+  const {user, setUser} = useUser()
   const [shouldScroll, setShouldScroll] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [profileData, setProfileData] = useState({
-    username: "HamsterMaster",
     avatar: <TfiFaceSmile />,
-    joinDate: "2024-01-15",
-    totalCoins: 1234567,
-    level: 15,
-    energyLevel: 3,
-    totalTaps: 15420,
-    friendsInvited: 3,
-    gamesCompleted: 12,
   })
 
   // Socket.IO ulanishini boshqarish
@@ -119,8 +43,6 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
       return () => {
         coinSocket.off('getUserDatasResponse');
       };
-    } else {
-      showToast("Socket not connected!", "error");
     }
   }, [coinSocket, tgUser.id]);
 
@@ -136,15 +58,6 @@ export function ProfilePage({ showToast, tgUser }: ProfilePageProps) {
     showToast("Profile updated successfully!")
   }
 
-  const handleClaimAchievement = (achievement: (typeof achievements)[0]) => {
-    if (achievement.completed) {
-      showToast(`Achievement claimed! +${achievement.reward.toLocaleString()} coins`)
-    }
-  }
-
-  const completedAchievements = achievements.filter((a) => a.completed).length
-  const totalAchievements = achievements.length
-  const achievementProgress = (completedAchievements / totalAchievements) * 100
 
   const getAvatarOptions = () => [<TfiFaceSmile />, <TfiApple />, <TfiCrown />, <TfiCup />, <TfiInfoAlt />, <TfiPowerOff />, <TfiStatsUp />, <TfiUser />, <TfiWand />, <TfiWallet />]
 
